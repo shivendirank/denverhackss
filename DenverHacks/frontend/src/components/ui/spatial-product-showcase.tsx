@@ -67,7 +67,7 @@ const ANIMATIONS = {
       opacity: 1,
       y: 0,
       filter: 'blur(0px)',
-      transition: { type: 'spring', stiffness: 100, damping: 20 },
+      transition: { type: 'spring' as const, stiffness: 100, damping: 20 },
     },
     exit: { opacity: 0, y: -10, filter: 'blur(5px)' },
   },
@@ -85,7 +85,7 @@ const ANIMATIONS = {
       filter: 'blur(0px)',
       rotate: 0,
       x: 0,
-      transition: { type: 'spring', stiffness: 260, damping: 20 },
+      transition: { type: 'spring' as const, stiffness: 260, damping: 20 },
     },
     exit: {
       opacity: 0,
@@ -395,7 +395,7 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
       <main className="relative z-10 w-full px-6 py-8 flex flex-col justify-center max-w-[1600px] mx-auto">
         <motion.div
           layout
-          transition={{ type: 'spring', bounce: 0, duration: 0.9 }}
+          transition={{ type: 'spring' as const, bounce: 0, duration: 0.9 }}
           className="flex flex-col md:flex-row items-start justify-center md:justify-between gap-12 md:gap-16 lg:gap-20 w-full"
         >
           {/* Left column: Orb + compact sections */}
@@ -473,7 +473,7 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
               initial={{ opacity: 0, scale: 0.96 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.96 }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              transition={{ type: 'spring' as const, damping: 25, stiffness: 300 }}
               className="fixed left-1/2 top-1/2 z-50 w-full max-w-2xl max-h-[85vh] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-white/10 bg-zinc-900 shadow-2xl overflow-hidden flex flex-col"
             >
               <div className="flex items-center justify-between border-b border-white/10 px-6 py-4 shrink-0">
