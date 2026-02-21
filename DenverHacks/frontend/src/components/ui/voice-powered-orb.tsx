@@ -284,8 +284,8 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
       }
       container.appendChild(glContext.canvas as HTMLCanvasElement);
 
-      const geometry = new Triangle(glContext);
-      program = new Program(glContext, {
+      const geometry = new Triangle(glContext as any);
+      program = new Program(glContext as any, {
         vertex: vert,
         fragment: frag,
         uniforms: {
