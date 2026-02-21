@@ -26,8 +26,8 @@ import { AgentWalletBalance } from '@/components/ui/agent-wallet-balance';
 import { AgentRunView } from '@/components/ui/agent-run-view';
 import { ScopesAndLimits } from '@/components/ui/scopes-and-limits';
 import { PaymentInflowOutflowChart } from '@/components/ui/payment-inflow-outflow-chart';
-import AgentZeroGNFT from '@/components/ui/agent-zerog-nft';
-import { X402Modal } from '@/components/ui/x402-modal';
+import AgentZeroGNFTCard from '@/components/ui/agent-zerog-nft-card';
+import { X402Demo } from '@/components/ui/x402-demo-modal';
 import { getExplorerTxUrl, type AgentDetail } from '@/lib/agents';
 
 /** Hue in degrees per agent for orb color variation */
@@ -417,7 +417,7 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
             <div className="w-full max-w-[420px] mt-3 flex flex-col gap-10">
               {/* 0G Identity NFT - individual attestation */}
               <motion.div variants={ANIMATIONS.item} className="w-full">
-                <AgentZeroGNFT agentId={data.id} />
+                <AgentZeroGNFTCard agentId={data.id} />
               </motion.div>
               
               {/* Wallet balance - compact, fits under orb */}
@@ -499,7 +499,19 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
       </AnimatePresence>
 
       {/* X402 Modal */}
-      <X402Modal isOpen={showX402Modal} onClose={() => setShowX402Modal(false)} />
+      {showX402Modal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowX402Modal(false)}>
+          <div onClick={(e) => e.stopPropagation()}>
+            <X402Demo
+              fromAgent={data.name}
+              toAgent="Tool Registry"
+              amount="0.001 ETH"
+              purpose="Tool usage payment"
+              onClose={() => setShowX402Modal(false)}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
