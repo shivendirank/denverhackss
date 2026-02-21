@@ -211,12 +211,6 @@ const AgentDetails = ({
             walletAddress={data.walletAddress}
             verified={data.verified}
             verifiedClassName="text-emerald-400"
-            agentName={data.name}
-            onTransactionComplete={(transaction) => {
-              if (onTransactionComplete) {
-                onTransactionComplete(transaction);
-              }
-            }}
           />
         </motion.div>
       )}
