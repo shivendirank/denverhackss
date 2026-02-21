@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: denverhacks-frontend
+    env: node
+    region: oregon
+    plan: free
+    rootDir: DenverHacks/frontend
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20

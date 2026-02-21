@@ -1,0 +1,115 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Tool {
+  id              String      @id @default(uuid())
+  onChainId       String      @unique
+  ownerWallet     String
+  name            String
+  description     String
+  schema          Json        // OpenAI function calling format
+  openApiSpec     Json        // original parsed spec
+  endpointUrl     String
+  authType        String      // none | apikey | bearer | oauth2
+  authConfig      Json?       // AES-256 encrypted at rest
+  priceWei        String
+  active          Boolean     @default(true)
+  zgStorageRef    String?     // 0G Storage content hash for full schema blob
+  baseToolId      String?     // bytes32 from Base ToolRegistry
+  kiteTxHash      String?     // registration tx on Kite
+  createdAt       DateTime    @default(now())
+  executions      Execution[]
+}
+
+model Agent {
+  id                String         @id @default(uuid())
+  agentId           String         @unique  // bytes32
+  wallet            String         @unique
+  nftTokenId        String?        @unique  // ERC-7857 token ID on 0G
+  hederaAccountId   String?        @unique
+  hcsTopicId        String?        @unique
+  name              String
+  reputationScore   Float          @default(0)
+  reputationData    Json?
+  active            Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  executions        Execution[]
+  balance           EscrowBalance?
+}
+
+model Execution {
+  id              String           @id @default(uuid())
+  agentId         String
+  toolId          String
+  paramsHash      String
+  resultHash      String?
+  costWei         String
+  paymentChain    String           // base | kite
+  status          ExecutionStatus
+  upstreamStatus  Int?
+  baseTxHash      String?
+  kiteTxHash      String?
+  hcsSequence     Int?
+  ucpNonce        String?
+  batchId         String?
+  createdAt       DateTime         @default(now())
+  agent           Agent            @relation(fields: [agentId], references: [id])
+  tool            Tool             @relation(fields: [toolId], references: [id])
+}
+
+model EscrowBalance {
+  agentId         String    @id
+  baseBalanceWei  String    @default("0")
+  kiteBalanceWei  String    @default("0")
+  hbarBalance     String    @default("0")
+  updatedAt       DateTime  @updatedAt
+  agent           Agent     @relation(fields: [agentId], references: [id])
+}
+
+model Settlement {
+  id            String            @id @default(uuid())
+  batchId       String            @unique
+  executionIds  String[]
+  totalWei      String
+  chain         String            // base | kite
+  txHash        String?
+  status        SettlementStatus
+  createdAt     DateTime          @default(now())
+  confirmedAt   DateTime?
+}
+
+model UCPMessage {
+  id            String    @id @default(uuid())
+  type          String    // CAPABILITY_AD | COMMERCE_REQUEST | COMMERCE_ACCEPT | COMMERCE_COMPLETE
+  fromAgentId   String
+  toAgentId     String?
+  toolId        String?
+  nonce         String    @unique
+  offerAmount   String?
+  status        String
+  hcsSequence   Int?
+  createdAt     DateTime  @default(now())
+}
+
+enum ExecutionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  REFUNDED
+}
+
+enum SettlementStatus {
+  PENDING
+  SUBMITTED
+  CONFIRMED
+  FAILED
+}

@@ -1,0 +1,25 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        { "internalType": "string", "name": "toolId", "type": "string" }
+      ],
+      "name": "getTool",
+      "outputs": [
+        {
+          "components": [
+            { "internalType": "string", "name": "id", "type": "string" },
+            { "internalType": "string", "name": "name", "type": "string" },
+            { "internalType": "string", "name": "endpoint", "type": "string" },
+            { "internalType": "uint256", "name": "cost", "type": "uint256" }
+          ],
+          "internalType": "struct ToolRegistry.Tool",
+          "name": "",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
+}

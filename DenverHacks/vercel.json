@@ -1,0 +1,8 @@
+{
+  "buildCommand": "cd DenverHacks/frontend && npm install && npm run build",
+  "outputDirectory": "DenverHacks/frontend/.next",
+  "framework": "nextjs",
+  "installCommand": "cd DenverHacks/frontend && npm install",
+  "devCommand": "cd DenverHacks/frontend && npm run dev",
+  "rootDirectory": "DenverHacks/frontend"
+}

@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Agent Observer Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Courier New", monospace;
+      background-color: #0a0e27;
+      color: #00ff88;
+      line-height: 1.6;
+      overflow: hidden;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 60px 1fr 100px;
+      height: 100vh;
+      gap: 8px;
+      padding: 8px;
+    }
+
+    /* Header */
+    header {
+      grid-column: 1 / -1;
+      background: linear-gradient(90deg, #1a1f3a 0%, #2d1b4e 100%);
+      border: 1px solid #00ff88;
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-radius: 4px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+    }
+
+    header h1 {
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .stats {
+      display: flex;
+      gap: 32px;
+      font-size: 12px;
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-label {
+      color: #00aa66;
+      font-size: 10px;
+    }
+
+    .stat-value {
+      font-size: 16px;
+      font-weight: bold;
+      color: #00ff88;
+    }
+
+    /* Main content */
+    .content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      grid-column: 1 / -1;
+    }
+
+    .panel {
+      background: #0f1629;
+      border: 1px solid #00ff88;
+      border-radius: 4px;
+      padding: 16px;
+      overflow-y: auto;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.05);
+    }
+
+    .panel h2 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+      color: #00ff88;
+      border-bottom: 1px solid #00ff88;
+      padding-bottom: 8px;
+    }
+
+    /* Activity feed */
+    .activity-item {
+      font-size: 11px;
+      margin-bottom: 8px;
+      padding: 8px;
+      background: rgba(0, 255, 136, 0.05);
+      border-left: 2px solid #00ff88;
+      border-radius: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .activity-item.success {
+      border-left-color: #00ff88;
+    }
+
+    .activity-item.failure {
+      border-left-color: #ff3333;
+      color: #ff3333;
+    }
+
+    .activity-item.pending {
+      border-left-color: #ffaa00;
+      color: #ffaa00;
+    }
+
+    .timestamp {
+      color: #00aa66;
+      font-size: 10px;
+    }
+
+    /* Pipeline / Flow */
+    .pipeline {
+      margin-top: 16px;
+    }
+
+    .pipeline-stage {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+      font-size: 10px;
+    }
+
+    .stage-badge {
+      background: #00ff88;
+      color: #0a0e27;
+      padding: 2px 6px;
+      border-radius: 2px;
+      font-weight: bold;
+      margin-right: 8px;
+      text-transform: uppercase;
+      min-width: 60px;
+      text-align: center;
+    }
+
+    .stage-badge.pending {
+      background: #ffaa00;
+    }
+
+    .stage-badge.failure {
+      background: #ff3333;
+    }
+
+    .arrow {
+      color: #00ff88;
+      margin: 0 4px;
+    }
+
+    /* Leaderboard */
+    .leaderboard {
+      margin-top: 16px;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 30px 1fr 80px 60px;
+      gap: 8px;
+      font-size: 10px;
+      margin-bottom: 6px;
+      padding: 6px;
+      background: rgba(0, 255, 136, 0.05);
+      border-radius: 2px;
+      align-items: center;
+    }
+
+    .rank {
+      font-weight: bold;
+      color: #ffaa00;
+    }
+
+    .agent-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .score {
+      text-align: right;
+      color: #00ff88;
+      font-weight: bold;
+    }
+
+    .executions {
+      text-align: right;
+      color: #00aa66;
+    }
+
+    /* Footer */
+    footer {
+      grid-column: 1 / -1;
+      background: linear-gradient(90deg, #1a1f3a 0%, #2d1b4e 100%);
+      border: 1px solid #00ff88;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      border-radius: 4px;
+      box-shadow: 0 0 20px rgba(0, 255, 136, 0.1);
+    }
+
+    .connection-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #00ff88;
+      animation: pulse 2s infinite;
+    }
+
+    .status-indicator.disconnected {
+      background: #ff3333;
+      animation: none;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.5;
+      }
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 255, 136, 0.05);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #00ff88;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #00cc66;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+
+      .content {
+        grid-template-columns: 1fr;
+      }
+
+      .stats {
+        gap: 16px;
+        font-size: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🤖 AI Agent Observer</h1>
+      <div class="stats">
+        <div class="stat-item">
+          <span class="stat-label">Active Agents</span>
+          <span class="stat-value" id="agentCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Total Executions</span>
+          <span class="stat-value" id="executionCount">0</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Volume Settled</span>
+          <span class="stat-value" id="volumeSettled">0 ETH</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <div class="panel">
+        <h2>⛓️ Base L2 Activity</h2>
+        <div id="baseActivity">
+          <div class="activity-item pending">Waiting for activity...</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>📋 Hedera Activity</h2>
+        <div id="hederaActivity">
+          <div class="activity-item pending">Waiting for activity...</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel" style="grid-column: 1 / -1">
+      <h2>🔄 Live Agent-to-Agent Flow</h2>
+      <div id="pipelineView" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px">
+        <div class="activity-item pending">No active transactions...</div>
+      </div>
+
+      <div class="leaderboard">
+        <h3 style="font-size: 11px; margin-top: 16px; margin-bottom: 8px; color: #00ff88">🏆 Agent Leaderboard</h3>
+        <div id="leaderboard">
+          <div class="leaderboard-row">
+            <div>Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="connection-status">
+        <div class="status-indicator" id="statusIndicator"></div>
+        <span id="statusText">Connected</span>
+      </div>
+      <span id="timestamp"></span>
+    </footer>
+  </div>
+
+  <script>
+    const API_URL =
+      window.location.origin;
+    const BASE_ADDRESS_PATTERN =
+      "0x"; // Truncate for display
+    let stats = {
+      agents: 0,
+      executions: 0,
+      volume: "0",
+    };
+    let eventSource = null;
+
+    // Update timestamp
+    setInterval(() => {
+      document.getElementById("timestamp").textContent =
+        new Date().toLocaleTimeString();
+    }, 1000);
+
+    // Connect to SSE stream
+    function connectStream() {
+      if (eventSource) eventSource.close();
+
+      eventSource = new EventSource(
+        `${API_URL}/api/stream`
+      );
+
+      eventSource.addEventListener("agent_execution", (e) => {
+        const data = JSON.parse(e.data);
+        addBaseActivity(
+          `✓ Execution: ${data.agentId?.slice(0, 8)}...${data.toolId?.slice(0, 8)}... (${data.status})`
+        );
+        stats.executions++;
+        updateStats();
+      });
+
+      eventSource.addEventListener("payment_settled", (e) => {
+        const data = JSON.parse(e.data);
+        addBaseActivity(
+          `💰 Settlement: ${data.amount} wei on ${data.chain}`
+        );
+        updateStats();
+      });
+
+      eventSource.addEventListener("reputation_updated", (e) => {
+        const data = JSON.parse(e.data);
+        addHederaActivity(
+          `📈 Reputation: Agent score ${data.score} (${data.totalExecutions} execs)`
+        );
+      });
+
+      eventSource.addEventListener("ucp_message", (e) => {
+        const data = JSON.parse(e.data);
+        addHederaActivity(
+          `🔗 UCP: ${data.type.slice(0, 20)}... from ${data.fromAgentId?.slice(0, 8)}...`
+        );
+        updatePipeline(data);
+      });
+
+      eventSource.addEventListener("agent_registered", (e) => {
+        const data = JSON.parse(e.data);
+        stats.agents++;
+        addHederaActivity(`🎭 New Agent: ${data.name}`);
+        updateStats();
+      });
+
+      eventSource.onerror = () => {
+        document.getElementById("statusIndicator").classList.add("disconnected");
+        document.getElementById("statusText").textContent =
+          "Disconnected";
+        setTimeout(connectStream, 5000);
+      };
+
+      document
+        .getElementById("statusIndicator")
+        .classList.remove("disconnected");
+      document.getElementById("statusText").textContent = "Connected";
+    }
+
+    function addBaseActivity(message) {
+      const container = document.getElementById("baseActivity");
+      if (container.innerHTML.includes("Waiting for activity")) {
+        container.innerHTML = "";
+      }
+
+      const item = document.createElement("div");
+      item.className = "activity-item success";
+      item.innerHTML = `<span class="timestamp">[${new Date().toLocaleTimeString()}]</span> ${message}`;
+      container.insertBefore(item, container.firstChild);
+
+      // Keep only last 20 items
+      while (container.children.length > 20) {
+        container.removeChild(container.lastChild);
+      }
+    }
+
+    function addHederaActivity(message) {
+      const container = document.getElementById("hederaActivity");
+      if (container.innerHTML.includes("Waiting for activity")) {
+        container.innerHTML = "";
+      }
+
+      const item = document.createElement("div");
+      item.className = "activity-item success";
+      item.innerHTML = `<span class="timestamp">[${new Date().toLocaleTimeString()}]</span> ${message}`;
+      container.insertBefore(item, container.firstChild);
+
+      while (container.children.length > 20) {
+        container.removeChild(container.lastChild);
+      }
+    }
+
+    function updatePipeline(data) {
+      const container = document.getElementById("pipelineView");
+      if (container.innerHTML.includes("No active transactions")) {
+        container.innerHTML = "";
+      }
+
+      const flow = document.createElement("div");
+      flow.className = "pipeline";
+
+      const stages =
+        data.type === "COMMERCE_REQUEST"
+          ? ["REQUEST", "PENDING", "EXECUTE", "COMPLETE"]
+          : ["ACCEPT", "EXECUTING", "SUCCESS"];
+
+      const stageHtml = stages
+        .map((stage, i) => {
+          const completed = i === 0;
+          return `
+        <div class="pipeline-stage">
+          <div class="stage-badge ${completed ? "" : "pending"}">${stage}</div>
+          ${i < stages.length - 1 ? '<span class="arrow">→</span>' : ""}
+        </div>
+      `;
+        })
+        .join("");
+
+      flow.innerHTML = `
+      <div style="font-size: 10px; margin-bottom: 8px; color: #00ff88">
+        <strong>${data.type}</strong>
+        <br>from: ${data.fromAgentId?.slice(0, 12)}...
+        <br>to: ${data.toAgentId?.slice(0, 12) || "broadcast"}
+      </div>
+      ${stageHtml}
+    `;
+
+      container.insertBefore(flow, container.firstChild);
+
+      // Keep only last 5 flows
+      while (container.children.length > 5) {
+        container.removeChild(container.lastChild);
+      }
+    }
+
+    function updateStats() {
+      document.getElementById("agentCount").textContent = stats.agents;
+      document.getElementById("executionCount").textContent = stats.executions;
+      // In production, calculate from actual settled amounts
+      document.getElementById("volumeSettled").textContent = "0 ETH";
+    }
+
+    // Close stream on page unload
+    window.addEventListener("beforeunload", () => {
+      if (eventSource) eventSource.close();
+    });
+
+    // Start connection
+    connectStream();
+
+    // Load leaderboard
+    async function loadLeaderboard() {
+      try {
+        const response = await fetch(
+          `${API_URL}/api/reputation/leaderboard`
+        );
+        if (!response.ok) throw new Error("Failed to fetch leaderboard");
+
+        const data = await response.json();
+        const container = document.getElementById("leaderboard");
+        container.innerHTML = data
+          .slice(0, 10)
+          .map(
+            (agent, i) =>
+              `<div class="leaderboard-row">
+            <div class="rank">#${agent.rank}</div>
+            <div class="agent-name">${agent.name || agent.agentId.slice(0, 8) + "..."}</div>
+            <div class="score">${Math.round(agent.reputationScore)}</div>
+            <div class="executions">${agent.reputationData?.totalExecutions || 0}</div>
+          </div>`
+          )
+          .join("");
+      } catch (error) {
+        console.error("Leaderboard error:", error);
+      }
+    }
+
+    loadLeaderboard();
+    setInterval(loadLeaderboard, 30000);
+  </script>
+</body>
+</html>
