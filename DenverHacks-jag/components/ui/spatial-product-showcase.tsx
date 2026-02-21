@@ -180,9 +180,11 @@ const DashboardSection = ({
 const AgentDetails = ({
   data,
   onViewFullSpecs,
+  onTransactionComplete,
 }: {
   data: AgentDetail;
   onViewFullSpecs?: () => void;
+  onTransactionComplete?: (transaction: any) => void;
 }) => {
   const barColorClass = `left-0 ${data.colors.glow}`;
 
@@ -209,6 +211,12 @@ const AgentDetails = ({
             walletAddress={data.walletAddress}
             verified={data.verified}
             verifiedClassName="text-emerald-400"
+            agentName={data.name}
+            onTransactionComplete={(transaction) => {
+              if (onTransactionComplete) {
+                onTransactionComplete(transaction);
+              }
+            }}
           />
         </motion.div>
       )}
@@ -446,7 +454,11 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
 
           {/* Right column: Main dashboard content */}
           <motion.div layout="position" className="w-full flex-1 flex justify-center md:justify-start min-w-0 max-w-none md:pl-10">
-            <AgentDetails data={data} onViewFullSpecs={() => setShowFullSpecs(true)} />
+            <AgentDetails
+              data={data}
+              onViewFullSpecs={() => setShowFullSpecs(true)}
+              onTransactionComplete={onTransactionComplete}
+            />
           </motion.div>
         </motion.div>
       </main>

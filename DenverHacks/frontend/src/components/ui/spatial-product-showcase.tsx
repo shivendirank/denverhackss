@@ -18,7 +18,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { VoicePoweredOrb } from '@/components/ui/voice-powered-orb';
-import { AgentOrbWith3D } from '@/components/ui/agent-orb-with-3d';
 import { AgentIdentityCard } from '@/components/ui/agent-identity-card';
 import { OnChainActivityFeed } from '@/components/ui/on-chain-activity-feed';
 import { ToolRegistryCatalog } from '@/components/ui/tool-registry-catalog';
@@ -27,8 +26,8 @@ import { AgentWalletBalance } from '@/components/ui/agent-wallet-balance';
 import { AgentRunView } from '@/components/ui/agent-run-view';
 import { ScopesAndLimits } from '@/components/ui/scopes-and-limits';
 import { PaymentInflowOutflowChart } from '@/components/ui/payment-inflow-outflow-chart';
-import { AutonomousExecutionDemo } from '@/components/ui/autonomous-execution-demo';
-import { AutonomousAgentMode } from '@/components/ui/autonomous-agent-mode';
+import AgentZeroGNFT from '@/components/ui/agent-zerog-nft';
+import { X402Modal } from '@/components/ui/x402-modal';
 import { getExplorerTxUrl, type AgentDetail } from '@/lib/agents';
 
 /** Hue in degrees per agent for orb color variation */
@@ -101,9 +100,18 @@ const ANIMATIONS = {
 // =========================================
 
 const BackgroundGradient = ({ data }: { data: AgentDetail }) => {
+  const isBlue = data.colors.gradient.includes('blue');
   return (
     <div className="fixed inset-0 pointer-events-none">
-      <div className="absolute inset-0 bg-black" />
+      <motion.div
+        animate={{
+          background: isBlue
+            ? 'radial-gradient(circle at 30% 50%, rgba(59, 130, 246, 0.12), transparent 50%)'
+            : 'radial-gradient(circle at 70% 50%, rgba(16, 185, 129, 0.12), transparent 50%)',
+        }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute inset-0"
+      />
     </div>
   );
 };
@@ -113,20 +121,29 @@ const AgentVisual = ({ data }: { data: AgentDetail }) => (
     <motion.div
       animate={{ rotate: 360 }}
       transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-      className="absolute inset-[-20%] rounded-full border border-dashed border-white/10"
+      className={`absolute inset-[-20%] rounded-full border border-dashed border-white/10 ${data.colors.ring}`}
     />
-    <div className="relative h-72 w-72 md:h-[320px] md:w-[320px] rounded-full border border-white/5 shadow-2xl flex items-center justify-center overflow-hidden bg-black/40 backdrop-blur-sm ring-2 ring-white/5">
+    {/* Outer glow - extends behind the image */}
+    <motion.div
+      animate={{ scale: [1, 1.08, 1] }}
+      transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
+      className={`absolute inset-[-15%] rounded-full bg-gradient-to-br ${data.colors.gradient} blur-3xl opacity-50`}
+    />
+    <motion.div
+      animate={{ scale: [1, 1.05, 1] }}
+      transition={{ duration: 4, repeat: Infinity, ease: 'easeInOut' }}
+      className={`absolute inset-[-5%] rounded-full bg-gradient-to-br ${data.colors.gradient} blur-2xl opacity-60`}
+    />
+    <div className="relative h-80 w-80 md:h-[420px] md:w-[420px] rounded-full border border-white/5 shadow-2xl flex items-center justify-center overflow-hidden bg-black/20 backdrop-blur-sm ring-2 ring-white/5">
       <motion.div
         animate={{ y: [-10, 10, -10] }}
         transition={{ repeat: Infinity, duration: 6, ease: 'easeInOut' }}
         className="relative z-10 w-full h-full flex items-center justify-center"
       >
-        <AgentOrbWith3D
+        <VoicePoweredOrb
           className="rounded-full"
           hue={AGENT_HUE[data.id] ?? 0}
           enableVoiceControl={false}
-          agentName={data.name}
-          showSpline={true}
         />
       </motion.div>
     </div>
@@ -134,8 +151,8 @@ const AgentVisual = ({ data }: { data: AgentDetail }) => (
       layout="position"
       className="absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap"
     >
-      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-zinc-500 bg-black/80 px-4 py-2 rounded-full border border-white/5 backdrop-blur">
-        <span className="h-1.5 w-1.5 rounded-full bg-white/70 animate-pulse" />
+      <div className="flex items-center gap-2 text-xs uppercase tracking-widest text-zinc-500 bg-zinc-950/80 px-4 py-2 rounded-full border border-white/5 backdrop-blur">
+        <span className={`h-1.5 w-1.5 rounded-full ${data.colors.glow} animate-pulse`} />
         {data.status}
       </div>
     </motion.div>
@@ -163,9 +180,11 @@ const DashboardSection = ({
 const AgentDetails = ({
   data,
   onViewFullSpecs,
+  onTransactionComplete,
 }: {
   data: AgentDetail;
   onViewFullSpecs?: () => void;
+  onTransactionComplete?: (transaction: any) => void;
 }) => {
   const barColorClass = `left-0 ${data.colors.glow}`;
 
@@ -192,6 +211,12 @@ const AgentDetails = ({
             walletAddress={data.walletAddress}
             verified={data.verified}
             verifiedClassName="text-emerald-400"
+            agentName={data.name}
+            onTransactionComplete={(transaction) => {
+              if (onTransactionComplete) {
+                onTransactionComplete(transaction);
+              }
+            }}
           />
         </motion.div>
       )}
@@ -225,95 +250,12 @@ const AgentDetails = ({
         </DashboardSection>
       </motion.div>
 
-      {/* Autonomous Execution Demos */}
-      {data.walletAddress && (
-        <>
-          {/* Original Tool Execution Demo */}
-          <motion.div variants={ANIMATIONS.item} className="w-full">
-            <AutonomousExecutionDemo 
-              agentWallet={data.walletAddress} 
-              agentName={data.name}
-            />
-          </motion.div>
-
-          {/* New Agent-to-Agent Collaboration Mode */}
-          <motion.div variants={ANIMATIONS.item} className="w-full mt-6">
-            <AutonomousAgentMode
-              agentId={data.id}
-              agentName={data.name}
-              onTransactionComplete={(transaction) => {
-                if (onTransactionComplete) {
-                  onTransactionComplete(transaction);
-                }
-              }}
-            />
-          </motion.div>
-        </>
-      )}
-
       {/* Dashboard card: 2-column grid on large screens */}
       <motion.div
         variants={ANIMATIONS.item}
         className="w-full bg-zinc-900/40 p-8 rounded-2xl border border-white/5 backdrop-blur-sm"
       >
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-12 gap-y-8">
-          {/* Payment Flow - First for prominence */}
-          <DashboardSection title="Payment Flow" icon={CreditCard}>
-            <div className="space-y-4">
-              <PaymentInflowOutflowChart transactions={data.paymentTransactions} className="mb-4" />
-              
-              {/* Recent transactions list with better styling */}
-              <div className="rounded-lg bg-zinc-800/30 border border-emerald-500/10 p-4">
-                <h4 className="text-xs uppercase tracking-wider text-zinc-500 mb-3 flex items-center gap-2">
-                  <Zap size={12} className="text-emerald-400" />
-                  Recent X402 Transactions
-                </h4>
-                <ul className="space-y-2">
-                  {data.paymentTransactions.slice(0, 4).map((tx) => (
-                    <li
-                      key={tx.id}
-                      className="flex items-center justify-between text-sm p-2 rounded bg-zinc-900/40 hover:bg-zinc-900/60 transition-colors"
-                    >
-                      <span className={tx.direction === 'in' ? 'text-emerald-400 font-mono' : 'text-rose-400 font-mono'}>
-                        {tx.amount}
-                      </span>
-                      <span className="text-zinc-500 text-xs">{tx.time}</span>
-                    </li>
-                  ))}
-                  {data.paymentTransactions.length === 0 && (
-                    <li className="text-sm text-zinc-500 text-center py-2">No transactions yet</li>
-                  )}
-                </ul>
-              </div>
-            </div>
-          </DashboardSection>
-
-          {/* Capabilities - Second position */}
-          <DashboardSection title="Capabilities" icon={Zap}>
-            {data.features.map((feature, idx) => {
-              const IconComponent = FEATURE_ICON_MAP[feature.icon] ?? Zap;
-              return (
-                <div key={feature.label} className="group mb-5 last:mb-0">
-                  <div className="flex items-center justify-between mb-2 text-base">
-                    <div className="flex items-center gap-2 text-zinc-300">
-                      <IconComponent size={16} />
-                      <span>{feature.label}</span>
-                    </div>
-                    <span className="font-mono text-sm text-zinc-500">{feature.value}%</span>
-                  </div>
-                  <div className="relative h-2.5 w-full bg-zinc-800 rounded-full overflow-hidden">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${feature.value}%` }}
-                      transition={{ duration: 0.8, delay: 0.3 + idx * 0.1 }}
-                      className={`absolute top-0 bottom-0 ${data.colors.glow} opacity-80`}
-                    />
-                  </div>
-                </div>
-              );
-            })}
-          </DashboardSection>
-
           {/* On chain history */}
           <DashboardSection title="On chain history" icon={Link2}>
             <ul className="space-y-3">
@@ -357,6 +299,53 @@ const AgentDetails = ({
               )}
             </ul>
           </DashboardSection>
+
+          {/* Payment transactions */}
+          <DashboardSection title="Payment transactions" icon={CreditCard}>
+            <PaymentInflowOutflowChart transactions={data.paymentTransactions} className="mb-4" />
+            <ul className="space-y-3">
+              {data.paymentTransactions.slice(0, 4).map((tx) => (
+                <li
+                  key={tx.id}
+                  className="flex items-center justify-between text-sm"
+                >
+                  <span className={tx.direction === 'in' ? 'text-emerald-400' : 'text-rose-400'}>
+                    {tx.amount}
+                  </span>
+                  <span className="text-zinc-500">{tx.time}</span>
+                </li>
+              ))}
+              {data.paymentTransactions.length === 0 && (
+                <li className="text-sm text-zinc-500">No transactions</li>
+              )}
+            </ul>
+          </DashboardSection>
+
+          {/* Features - spans well in grid */}
+          <DashboardSection title="Features" icon={Zap}>
+            {data.features.map((feature, idx) => {
+              const IconComponent = FEATURE_ICON_MAP[feature.icon] ?? Zap;
+              return (
+                <div key={feature.label} className="group mb-5 last:mb-0">
+                  <div className="flex items-center justify-between mb-2 text-base">
+                    <div className="flex items-center gap-2 text-zinc-300">
+                      <IconComponent size={16} />
+                      <span>{feature.label}</span>
+                    </div>
+                    <span className="font-mono text-sm text-zinc-500">{feature.value}%</span>
+                  </div>
+                  <div className="relative h-2.5 w-full bg-zinc-800 rounded-full overflow-hidden">
+                    <motion.div
+                      initial={{ width: 0 }}
+                      animate={{ width: `${feature.value}%` }}
+                      transition={{ duration: 0.8, delay: 0.3 + idx * 0.1 }}
+                      className={`absolute top-0 bottom-0 ${barColorClass} opacity-80`}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </DashboardSection>
         </div>
 
         <div className="pt-6 mt-2 border-t border-white/5">
@@ -371,6 +360,16 @@ const AgentDetails = ({
           </button>
         </div>
       </motion.div>
+
+      {/* Tool registry & per-tool usage */}
+      {(data.toolRegistry?.length ?? 0) > 0 && (
+        <motion.div variants={ANIMATIONS.item} className="w-full mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <ToolRegistryCatalog tools={data.toolRegistry ?? []} />
+          {data.toolUsage && data.toolUsage.length > 0 && (
+            <PerToolUsageBilling usage={data.toolUsage} />
+          )}
+        </motion.div>
+      )}
 
     </motion.div>
   );
@@ -387,10 +386,23 @@ export interface AgentShowcaseProps {
 
 export default function SpatialProductShowcase({ data, onTransactionComplete }: AgentShowcaseProps) {
   const [showFullSpecs, setShowFullSpecs] = useState(false);
+  const [showX402Modal, setShowX402Modal] = useState(false);
 
   return (
-    <div className="relative min-h-screen w-full bg-[#0a0a0a] text-zinc-100 overflow-hidden selection:bg-zinc-800 flex flex-col items-center justify-center">
+    <div className="relative min-h-screen w-full bg-black text-zinc-100 overflow-hidden selection:bg-zinc-800 flex flex-col items-center justify-center">
       <BackgroundGradient data={data} />
+
+      {/* Floating X402 Button */}
+      <motion.button
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
+        whileTap={{ scale: 0.98 }}
+        onClick={() => setShowX402Modal(true)}
+        className="fixed top-6 right-6 z-40 px-4 py-2 bg-white/5 backdrop-blur-sm border border-white/10 text-zinc-400 hover:text-zinc-200 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+      >
+        <span className="tracking-wider">X402</span>
+      </motion.button>
 
       <main className="relative z-10 w-full px-6 py-8 flex flex-col justify-center max-w-[1600px] mx-auto">
         <motion.div
@@ -409,6 +421,11 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
             <AgentVisual data={data} />
             
             <div className="w-full max-w-[420px] mt-3 flex flex-col gap-10">
+              {/* 0G Identity NFT - individual attestation */}
+              <motion.div variants={ANIMATIONS.item} className="w-full">
+                <AgentZeroGNFT agentId={data.id} />
+              </motion.div>
+              
               {/* Wallet balance - compact, fits under orb */}
               {data.wallet && (
                 <motion.div variants={ANIMATIONS.item} className="w-full">
@@ -432,26 +449,16 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
                   />
                 </motion.div>
               )}
-
-              {/* Tool Registry - moved from right column */}
-              {(data.toolRegistry?.length ?? 0) > 0 && (
-                <motion.div variants={ANIMATIONS.item} className="w-full">
-                  <ToolRegistryCatalog tools={data.toolRegistry ?? []} />
-                </motion.div>
-              )}
-
-              {/* Usage & Billing - moved from right column */}
-              {data.toolUsage && data.toolUsage.length > 0 && (
-                <motion.div variants={ANIMATIONS.item} className="w-full">
-                  <PerToolUsageBilling usage={data.toolUsage} />
-                </motion.div>
-              )}
             </div>
           </motion.div>
 
           {/* Right column: Main dashboard content */}
           <motion.div layout="position" className="w-full flex-1 flex justify-center md:justify-start min-w-0 max-w-none md:pl-10">
-            <AgentDetails data={data} onViewFullSpecs={() => setShowFullSpecs(true)} />
+            <AgentDetails
+              data={data}
+              onViewFullSpecs={() => setShowFullSpecs(true)}
+              onTransactionComplete={onTransactionComplete}
+            />
           </motion.div>
         </motion.div>
       </main>
@@ -490,12 +497,15 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
                 </button>
               </div>
               <div className="overflow-y-auto p-6">
-                <OnChainActivityFeed agentWallet={data.walletAddress} enableRealTime={true} />
+                <OnChainActivityFeed entries={data.onChainHistory} />
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
+      {/* X402 Modal */}
+      <X402Modal isOpen={showX402Modal} onClose={() => setShowX402Modal(false)} />
     </div>
   );
 }
