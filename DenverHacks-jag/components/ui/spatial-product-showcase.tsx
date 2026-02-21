@@ -373,9 +373,10 @@ const AgentDetails = ({
 
 export interface AgentShowcaseProps {
   data: AgentDetail;
+  onTransactionComplete?: (transaction: any) => void;
 }
 
-export default function SpatialProductShowcase({ data }: AgentShowcaseProps) {
+export default function SpatialProductShowcase({ data, onTransactionComplete }: AgentShowcaseProps) {
   const [showFullSpecs, setShowFullSpecs] = useState(false);
   const [showX402Modal, setShowX402Modal] = useState(false);
 
