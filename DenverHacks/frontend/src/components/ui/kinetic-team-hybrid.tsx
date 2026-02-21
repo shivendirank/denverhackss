@@ -111,7 +111,7 @@ export default function KineticTeamHybrid() {
                 initial={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
                 animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
                 exit={{ opacity: 0, scale: 0.5, filter: "blur(10px)" }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                transition={{ type: "spring" as const, stiffness: 300, damping: 25 }}
                 className="relative h-64 w-80 overflow-hidden rounded-xl border border-red-500/30 bg-black shadow-2xl shadow-red-500/20"
               >
                 {/* Active team member image */}

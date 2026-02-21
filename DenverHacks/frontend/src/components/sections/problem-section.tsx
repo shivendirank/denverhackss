@@ -121,7 +121,7 @@ export const ProblemSection = () => {
           x: `${mousePosition.x}%`,
           y: `${mousePosition.y}%`,
         }}
-        transition={{ type: 'spring', stiffness: 50, damping: 30 }}
+        transition={{ type: 'spring' as const, stiffness: 50, damping: 30 }}
         style={{
           background: 'radial-gradient(circle, rgba(239,68,68,0.08) 0%, transparent 70%)',
           transform: 'translate(-50%, -50%)',

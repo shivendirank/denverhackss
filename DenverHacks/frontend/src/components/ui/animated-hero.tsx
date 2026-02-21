@@ -32,7 +32,7 @@ function AnimatedHero() {
           <motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, type: "spring", stiffness: 100 }}
+            transition={{ delay: 0.2, type: "spring" as const, stiffness: 100 }}
             className="relative"
           >
             <Button 
@@ -69,7 +69,7 @@ function AnimatedHero() {
                     key={index}
                     className="absolute font-black text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-orange-500 to-amber-500 drop-shadow-[0_0_30px_rgba(239,68,68,0.5)]"
                     initial={{ opacity: 0, y: "-100" }}
-                    transition={{ type: "spring", stiffness: 60, damping: 15 }}
+                    transition={{ type: "spring" as const, stiffness: 60, damping: 15 }}
                     animate={
                       titleNumber === index
                         ? {

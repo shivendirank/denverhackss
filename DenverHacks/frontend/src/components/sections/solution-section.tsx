@@ -125,7 +125,7 @@ export const SolutionSection = () => {
           x: `${mousePosition.x}%`,
           y: `${mousePosition.y}%`,
         }}
-        transition={{ type: 'spring', stiffness: 50, damping: 30 }}
+        transition={{ type: 'spring' as const, stiffness: 50, damping: 30 }}
         style={{
           background: 'radial-gradient(circle, rgba(255,182,217,0.12) 0%, transparent 70%)',
           transform: 'translate(-50%, -50%)',
@@ -343,7 +343,7 @@ export const SolutionSection = () => {
               onMouseLeave={() => setHoveredCard(null)}
               initial={{ opacity: 0, x: -50 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.5 + i * 0.12, type: 'spring', stiffness: 100 }}
+              transition={{ delay: 0.5 + i * 0.12, type: 'spring' as const, stiffness: 100 }}
               whileHover={{ scale: 1.03, x: 5 }}
             >
               {/* Enhanced Corner Accents */}
