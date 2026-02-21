@@ -491,7 +491,7 @@ export default function SpatialProductShowcase({ data, onTransactionComplete }: 
                 </button>
               </div>
               <div className="overflow-y-auto p-6">
-                <OnChainActivityFeed entries={data.onChainHistory} />
+                <OnChainActivityFeed agentWallet={data.walletAddress} />
               </div>
             </motion.div>
           </>
