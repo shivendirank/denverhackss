@@ -192,7 +192,7 @@ export const VoicePoweredOrb: FC<VoicePoweredOrbProps> = ({
 
   const analyzeAudio = () => {
     if (!analyserRef.current || !dataArrayRef.current) return 0;
-    analyserRef.current.getByteFrequencyData(dataArrayRef.current);
+    analyserRef.current.getByteFrequencyData(dataArrayRef.current as Uint8Array<ArrayBuffer>);
     let sum = 0;
     for (let i = 0; i < dataArrayRef.current.length; i++) {
       const value = dataArrayRef.current[i] / 255;
